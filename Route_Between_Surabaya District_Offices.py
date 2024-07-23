@@ -1,5 +1,3 @@
-# Reference: https://www.kaggle.com/code/jamesmcguigan/ant-colony-optimization-algorithm
-
 # Define Peta Kecamatan
 import numpy as np
 import math

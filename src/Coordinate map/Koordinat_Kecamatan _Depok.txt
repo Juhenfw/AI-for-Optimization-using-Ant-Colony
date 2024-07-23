@@ -1,0 +1,13 @@
+Kecamatan = {
+    "Beji": (449, 303.3),
+    "Bojongsari": (193, 365),
+    "Cilodong": (559.4, 479),
+    "Cimanggis": (650.8, 286),
+    "Cinere": (339, 148.4),
+    "Cipayung": (375, 485.4),
+    "Limo": (301, 266.4),
+    "Pancoran Mas": (459, 405.2),
+    "Sawangan": (243.9, 401),
+    "Sukmajaya": (524, 372.5),
+    "Tapos": (703.9, 511.7)
+}

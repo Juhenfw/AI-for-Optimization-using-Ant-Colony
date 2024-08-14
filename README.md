@@ -28,8 +28,8 @@ Anda dapat melihat contoh hasil jalur optimal yang dihasilkan dari beberapa sken
 - Jalur optimal untuk seluruh kecamatan di Surabaya.
 - Variasi rute dengan penjadwalan waktu berbeda untuk menunjukkan dampak terhadap performa algoritma.
 
-![Peta Kantor Kecamatan Surabaya](path.png)
-![Jalur Optimal](Kecamatan.png)
+![Peta Kantor Kecamatan Surabaya](src/map/Location_District_Office_Surabaya.png)
+![Jalur Optimal](src/example_of_optimal_path_results.png)
 
 ## Lisensi
 

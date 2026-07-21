@@ -1,3 +1,7 @@
+![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
+![License](https://img.shields.io/badge/license-Apache%202.0-green)
+![Tests](https://github.com/Juhenfw/AI-for-Optimization-using-Ant-Colony/actions/workflows/ci.yml/badge.svg)
+
 # Optimasi Rute Antar Kantor Kecamatan (TSP) dengan Ant Colony Optimization
 
 *[🇬🇧 Read in English (Baca dalam Bahasa Inggris)](README.md)*

@@ -61,4 +61,4 @@ Utilizing the **Ant Colony Optimization (ACO)** algorithm, this script calculate
 
 ## License
 
-This project is licensed under the **Apache License, Version 2.0**[cite: 6] - see the [LICENSE](LICENSE) file for details on usage, reproduction, and distribution terms.
+This project is licensed under the **Apache License, Version 2.0** - see the [LICENSE](LICENSE) file for details on usage, reproduction, and distribution terms.

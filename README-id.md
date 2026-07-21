@@ -61,4 +61,4 @@ Dengan memanfaatkan algoritma **Ant Colony Optimization (ACO)**, skrip ini mengh
 
 ## Lisensi
 
-Proyek ini dilisensikan di bawah **Apache License, Version 2.0**[cite: 6] - lihat file [LICENSE](LICENSE) untuk detail mengenai syarat penggunaan, reproduksi, dan distribusi.
+Proyek ini dilisensikan di bawah **Apache License, Version 2.0** - lihat file [LICENSE](LICENSE) untuk detail mengenai syarat penggunaan, reproduksi, dan distribusi.

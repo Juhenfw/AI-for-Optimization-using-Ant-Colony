@@ -1,63 +1,88 @@
+# Copyright 2026 [Juhen Fashikha Wildan / Universitas Airlangga]
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # Reference: https://www.kaggle.com/code/jamesmcguigan/ant-colony-optimization-algorithm
 
-# Define Peta Kecamatan
-import numpy as np
+# ==========================================
+# IMPORTS & TYPE HINTING
+# ==========================================
+import os
+import ast
+import time
 import math
+import random
+import argparse
+from itertools import chain
+from typing import Any, Callable, List, Tuple, Dict, Optional, Union
+
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from IPython.display import display, Image
-import os
-import ast
 
 # ==========================================
-# CONFIGURATION
+# GLOBAL PATH SETTINGS
 # ==========================================
-# Ubah nilai ini menjadi 'Surabaya', 'Sidoarjo', atau 'Depok'
-CITY_NAME = 'Surabaya' 
-# ==========================================
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 1. Smart Detector untuk Path Gambar Peta
-map_base_path = os.path.join(BASE_DIR, '..', 'assets', 'maps', f'Location_District_Office_{CITY_NAME}')
+# ==========================================
+# VISUALIZATION & HELPER FUNCTIONS
+# ==========================================
+def load_coordinates(city_name: str) -> Dict[str, Tuple[float, float]]:
+    """Membaca koordinat dari file txt di folder data/coordinates/"""
+    file_path = os.path.join(BASE_DIR, '..', 'data', 'coordinates', f'District_Office_{city_name}.txt')
+    with open(file_path, 'r') as file:
+        content = file.read()
+        dict_string = content.replace('Kecamatan = ', '').strip()
+        return ast.literal_eval(dict_string)
 
-# Cek keberadaan file dengan ekstensi .png atau .jpg
-if os.path.exists(f"{map_base_path}.png"):
-    MAP_PATH = f"{map_base_path}.png"
-elif os.path.exists(f"{map_base_path}.jpg"):
-    MAP_PATH = f"{map_base_path}.jpg"
-else:
-    raise FileNotFoundError(f"ERROR: Peta untuk {CITY_NAME} tidak ditemukan (baik format .png maupun .jpg) di folder assets/maps/")
+def load_city_map(city_name: str):
+    """Smart Detector untuk Path Gambar Peta"""
+    map_base_path = os.path.join(BASE_DIR, '..', 'assets', 'maps', f'Location_District_Office_{city_name}')
+    
+    if os.path.exists(f"{map_base_path}.png"):
+        return mpimg.imread(f"{map_base_path}.png")
+    elif os.path.exists(f"{map_base_path}.jpg"):
+        return mpimg.imread(f"{map_base_path}.jpg")
+    else:
+        raise FileNotFoundError(f"ERROR: Peta untuk {city_name} tidak ditemukan di folder assets/maps/")
 
-# Load Gambar Peta
-map_load = mpimg.imread(MAP_PATH)
-
-def show_Kecamatan(path, w=8, h=8):
-    """Plot a TSP path overlaid on a map of the Kantor Kecamatan in Surabaya."""
+def show_Kecamatan(path: Union[Dict, List], map_img: Any, w: int = 8, h: int = 8) -> None:
+    """Plot a TSP path overlaid on a map of the Kantor Kecamatan."""
     if isinstance(path, dict):      
         path = list(path.values())
     if isinstance(path[0][0], str): 
         path = [ item[1] for item in path ]    
-    plt.imshow(map_load)    
+    
+    plt.imshow(map_img)    
     for x0, y0 in path:
-        plt.plot(x0, y0, 'y*', markersize=5)  # y* = yellow star for starting point        
+        plt.plot(x0, y0, 'y*', markersize=5)      
     plt.axis("off")
     fig = plt.gcf()
     fig.set_size_inches([w, h])
 
-    # Tentukan direktori penyimpanan
     save_dir = os.path.join(BASE_DIR, '..', 'assets', 'results')
-    # Buat direktori jika belum ada (termasuk folder parent jika diperlukan)
     os.makedirs(save_dir, exist_ok=True)
-    
     save_path = os.path.join(save_dir, 'Kecamatan.png')
-    # ----------------------------
     
     plt.savefig(save_path)
-    plt.show()  # Display the figure
+    # plt.show() # Dinonaktifkan agar tidak menghentikan CLI
+    plt.close(fig) # Mencegah memory leak
 
-def show_path(path, starting_kecamatan=None, w=8, h=8):
-    """Plot a TSP path overlaid on a map of the Kantor Kecamatan in Surabaya."""
+def show_path(path: Union[Dict, List], map_img: Any, starting_kecamatan: Optional[Tuple[float, float]] = None, w: int = 8, h: int = 8) -> None:
+    """Plot a TSP path overlaid on a map."""
     if isinstance(path, dict):      
         path = list(path.values())
     if isinstance(path[0][0], str): 
@@ -66,122 +91,45 @@ def show_path(path, starting_kecamatan=None, w=8, h=8):
     starting_kecamatan = starting_kecamatan or path[0]
     x, y = list(zip(*path))
     (x0, y0) = starting_kecamatan
-    plt.imshow(map_load)
-    plt.plot(x0, y0, 'y*', markersize=5)  # y* = yellow star for starting point
-    plt.plot(x + x[:1], y + y[:1])  # sertakan titik awal di akhir jalur
+    
+    plt.imshow(map_img)
+    plt.plot(x0, y0, 'y*', markersize=5) 
+    plt.plot(x + x[:1], y + y[:1]) 
     plt.axis("off")
     fig = plt.gcf()
     fig.set_size_inches([w, h])
 
-    # Tentukan direktori penyimpanan
     save_dir = os.path.join(BASE_DIR, '..', 'assets', 'results')
-    # Buat direktori jika belum ada
     os.makedirs(save_dir, exist_ok=True)
-    
     save_path = os.path.join(save_dir, 'path.png')
-    # ----------------------------
     
     plt.savefig(save_path)
-    plt.show()  # Display the figure
+    # plt.show() # Dinonaktifkan agar tidak menghentikan CLI
+    plt.close(fig) # Mencegah memory leak
 
-###########################################################################################################################
-
-def distance(xy1, xy2) -> float:
-    if isinstance(xy1[0], str): xy1 = xy1[1]; xy2 = xy2[1];  # if xy1 == ("Name", (x,y))
+def distance(xy1: Any, xy2: Any) -> float:
+    if isinstance(xy1[0], str): xy1 = xy1[1]; xy2 = xy2[1]
     return math.sqrt((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2)
 
-def path_distance(path) -> int:
-    if isinstance(path, dict):      path = list(path.values())  # if path == {"Name": (x,y)}
-    if isinstance(path[0][0], str): path = [ item[1] for item in path ]  # if path == ("Name", (x,y))
+def path_distance(path: Union[Dict, List]) -> int:
+    if isinstance(path, dict):      path = list(path.values())
+    if isinstance(path[0][0], str): path = [ item[1] for item in path ]
     return int(sum(
         [ distance(path[i],  path[i + 1]) for i in range(len(path) - 1) ] +
-        [ distance(path[-1], path[0]) ]  # include cost of return journey
+        [ distance(path[-1], path[0]) ]  
     ))
 
-##################################################################################################################################
-
-# Load the Kecamatan and their coordinates
-# Reference Map: 
-# https://www.arcgis.com/home/webmap/viewer.html?webmap=7461583abab341b888603657e4a41ccf
-# https://www.surabaya.go.id/id/berita/58988/daftar-nama--alamat-camat-kota
-
-# Load Data Kecamatan di Surabaya
-
-def load_coordinates(city_name):
-    """Membaca koordinat dari file txt di folder data/coordinates/"""
-    file_path = os.path.join(BASE_DIR, '..', 'data', 'coordinates', f'District_Office_{city_name}.txt')
-    
-    with open(file_path, 'r') as file:
-        content = file.read()
-        dict_string = content.replace('Kecamatan = ', '').strip()
-        return ast.literal_eval(dict_string)
-
-# 2. Load data kota secara otomatis berdasarkan variabel CITY_NAME di atas
-print(f"--- Menjalankan Optimasi untuk Kota: {CITY_NAME.upper()} ---")
-Kecamatan_Dict = load_coordinates(CITY_NAME)
-Kecamatan = list(sorted(Kecamatan_Dict.items()))
-print("Banyak Kecamatan = ", len(Kecamatan))
-
-# Pemetaan Kecamatan pada Peta
-show_Kecamatan(Kecamatan)
-
-###################################################################################################################################
-
-# Rute Pada Peta
-show_path(Kecamatan)
-path_distance(Kecamatan)
-
-###################################################################################################################################
-
-# Hitung total jarak jalur
-total_distance = path_distance(Kecamatan)
-print("Total jarak jalur:", total_distance, "units")
-
-# Tampilkan gambar yang disimpan di VSCode
-kecamatan_img_path = os.path.join(BASE_DIR, '..', 'assets', 'results', 'Kecamatan.png')
-path_img_path = os.path.join(BASE_DIR, '..', 'assets', 'results', 'path.png')
-
-display(Image(filename=kecamatan_img_path))
-display(Image(filename=path_img_path))
-
-
-###################################################################################################################################
-
-import time
-from itertools import chain
-from typing import Any, Callable, List, Tuple, Union
-
-import numpy as np
-import random
-
+# ==========================================
+# ALGORITHM: ANT COLONY SOLVER
+# ==========================================
 class AntColonySolver:
     def __init__(self,
-                 cost_fn:                 
-                 
-                 Callable[[Any,Any], Union[float,int]],                         
-                 
-                 time=0,                  # berjalan untuk jangka waktu tertentu
-                 min_time=0,              # waktu proses minimum
-                 timeout=0,               # waktu maksimum dalam detik untuk menjalankan
-                 stop_factor=2,           # berapa kali menggandakan usaha setelah menemukan jalur terbaik yang baru
-                 min_round_trips=10,      # jumlah minimum perjalanan pulang-pergi sebelum berhenti
-                 max_round_trips=0,       # jumlah maksimum perjalanan pulang-pergi sebelum berhenti                
-                 min_ants=0,              # Jumlah total semut yang digunakan
-                 max_ants=0,              # Jumlah total semut yang digunakan
-                 
-                 ant_count=64,            # ini adalah batas bawah dari rentang hampir-optimal untuk kinerja numpy
-                 ant_speed=1,             # berapa banyak langkah yang ditempuh semut per epoch
-
-                 distance_power=1,        # kekuatan jarak yang mempengaruhi feromon                 
-                 pheromone_power=1.25,    # kekuatan di mana perbedaan dalam feromon diamati
-                 decay_power=0,           # seberapa cepat feromon meluruh
-                 reward_power=0,          # imbalan feromon relatif berdasarkan best_path_length/path_length 
-                 best_path_smell=2,       # pengganda ratu untuk feromon setelah menemukan jalur terbaik baru                  
-                 start_smell=0,           # jumlah feromon awal [0 defaults to `10**self.distance_power`]
-
-                 verbose=False,
-
-    ):
+                 cost_fn: Callable[[Any,Any], Union[float,int]],                         
+                 time=0, min_time=0, timeout=0, stop_factor=2, min_round_trips=10, max_round_trips=0,                
+                 min_ants=0, max_ants=0, ant_count=64, ant_speed=1, distance_power=1,        
+                 pheromone_power=1.25, decay_power=0, reward_power=0, best_path_smell=2,                  
+                 start_smell=0, verbose=False):
+        
         assert callable(cost_fn)        
         self.cost_fn         = cost_fn
         self.time            = int(time)
@@ -192,17 +140,14 @@ class AntColonySolver:
         self.max_round_trips = int(max_round_trips)
         self.min_ants        = int(min_ants)
         self.max_ants        = int(max_ants)
-    
         self.ant_count       = int(ant_count)
         self.ant_speed       = int(ant_speed)
-        
         self.distance_power  = float(distance_power)     
         self.pheromone_power = float(pheromone_power)
         self.decay_power     = float(decay_power)
         self.reward_power    = float(reward_power)
         self.best_path_smell = float(best_path_smell)
         self.start_smell     = float(start_smell or 10**self.distance_power)
-        
         self.verbose         = int(verbose)
         self._initalized     = False
         
@@ -211,61 +156,24 @@ class AntColonySolver:
         if self.min_ants and self.max_ants:               
             self.min_ants        = min(self.min_ants, self.max_ants)
 
-
-    def solve_initialize(
-            self,
-            problem_path: List[Any],
-    ) -> None:
-        ### Cache jarak antar node
-        self.distances = {
-            source: {
-                dest: self.cost_fn(source, dest)
-                for dest in problem_path
-            }
-            for source in problem_path
-        }
-
-        ### Cache biaya jarak antar node - pembagian dalam loop yang ketat itu mahal
-        self.distance_cost = {
-            source: {
-                dest: 1 / (1 + self.distances[source][dest]) ** self.distance_power
-                for dest in problem_path
-            }
-            for source in problem_path
-        }
-
-        ### Ini menyimpan jejak feromon yang perlahan terbentuk
-        self.pheromones = {
-            source: {
-                # Mendorong semut untuk mulai menjelajah ke segala arah dan titik terjauh
-                dest: self.start_smell
-                for dest in problem_path
-            }
-            for source in problem_path
-        }
+    def solve_initialize(self, problem_path: List[Any]) -> None:
+        self.distances = { source: { dest: self.cost_fn(source, dest) for dest in problem_path } for source in problem_path }
+        self.distance_cost = { source: { dest: 1 / (1 + self.distances[source][dest]) ** self.distance_power for dest in problem_path } for source in problem_path }
+        self.pheromones = { source: { dest: self.start_smell for dest in problem_path } for source in problem_path }
         
-        ### Sanitasi parameter masukan
-        if self.ant_count <= 0:
-            self.ant_count = len(problem_path)
-        if self.ant_speed <= 0:
-            self.ant_speed = np.median(list(chain(*[ d.values() for d in self.distances.values() ]))) // 5
+        if self.ant_count <= 0: self.ant_count = len(problem_path)
+        if self.ant_speed <= 0: self.ant_speed = np.median(list(chain(*[ d.values() for d in self.distances.values() ]))) // 5
         self.ant_speed = int(max(1,self.ant_speed))
         
-        ### Ekspor Heuristik
         self.ants_used   = 0
         self.epochs_used = 0
         self.round_trips = 0
         self._initalized = True        
 
-
-    def solve(self,
-              problem_path: List[Any],
-              restart=False,
-    ) -> List[Tuple[int,int]]:
+    def solve(self, problem_path: List[Any], restart=False) -> List[Tuple[int,int]]:
         if restart or not self._initalized:
             self.solve_initialize(problem_path)
 
-        ### Define Semut
         ants = {
             "distance":    np.zeros((self.ant_count,)).astype('int32'),
             "path":        [ [ problem_path[0] ]   for n in range(self.ant_count) ],
@@ -282,21 +190,13 @@ class AntColonySolver:
 
         while True:
             epoch += 1
-
-            ### Berjalannya semut yang tervektorisasi
-            # Pengoptimalan kecil, testing against `> self.ant_speed` rather than `> 0` 
-            #       menghindari komputasi ants_arriving di bagian utama dari loop ketat ini
             ants_travelling = (ants['distance'] > self.ant_speed)
             ants['distance'][ ants_travelling ] -= self.ant_speed
-            if all(ants_travelling):
-                continue  # lewati pemeriksaan terminasi sampai semut berikutnya tiba
+            if all(ants_travelling): continue 
             
-            ### Pemeriksaan vektorisasi kedatangan semut
             ants_arriving       = np.invert(ants_travelling)
             ants_arriving_index = np.where(ants_arriving)[0]
             for i in ants_arriving_index:
-
-                ### semut telah tiba di next_node
                 this_node = ants['path'][i][-1]
                 next_node = self.next_node(ants, i)
                 ants['distance'][i]  = self.distances[ this_node ][ next_node ]
@@ -304,12 +204,10 @@ class AntColonySolver:
                 ants['path_cost'][i] = ants['path_cost'][i] + ants['distance'][i]
                 ants['path'][i].append( next_node )
 
-                ### semut telah kembali ke koloninya
                 if not ants['remaining'][i] and ants['path'][i][0] == ants['path'][i][-1]:
                     self.ants_used  += 1
                     self.round_trips = max(self.round_trips, ants["round_trips"][i] + 1)
 
-                    ### Kami telah menemukan jalan baru yang terbaik - beri tahu Ratu
                     was_best_path = False
                     if ants['path_cost'][i] < best_path_cost:
                         was_best_path  = True
@@ -317,19 +215,8 @@ class AntColonySolver:
                         best_path      = ants['path'][i]
                         best_epochs   += [ epoch ]
                         if self.verbose:
-                            print({
-                                "path_cost":   int(ants['path_cost'][i]),
-                                "ants_used":   self.ants_used,
-                                "epoch":       epoch,
-                                "round_trips": ants['round_trips'][i] + 1,
-                                "clock":       int(time.perf_counter() - time_start),
-                            })
+                            print({"path_cost": int(ants['path_cost'][i]), "ants_used": self.ants_used, "epoch": epoch, "round_trips": ants['round_trips'][i] + 1, "clock": int(time.perf_counter() - time_start)})
 
-                    ### meninggalkan jejak feromon
-                    # melakukan ini hanya setelah semut tiba di rumah akan meningkatkan eksplorasi awal
-                    #  * self.round_trips memiliki efek merusak jejak feromon lama
-                    # ** self.reward_power = -3 memiliki efek mendorong semut untuk menjelajahi rute yang lebih panjang
-                    #                           yang dikombinasikan dengan penggandaan feromon untuk jalur_terbaik
                     reward = 1
                     if self.reward_power: reward *= ((best_path_cost / ants['path_cost'][i]) ** self.reward_power)
                     if self.decay_power:  reward *= (self.round_trips ** self.decay_power)
@@ -339,25 +226,16 @@ class AntColonySolver:
                         self.pheromones[this_node][next_node] += reward
                         self.pheromones[next_node][this_node] += reward
                         if was_best_path:
-                            # Ratu memerintahkan untuk menggandakan jumlah semut yang mengikuti jalur terbaik baru ini                            
                             self.pheromones[this_node][next_node] *= self.best_path_smell
                             self.pheromones[next_node][this_node] *= self.best_path_smell
 
-
-                    ### reset semut
                     ants["distance"][i]     = 0
                     ants["path"][i]         = [ problem_path[0] ]
                     ants["remaining"][i]    = set(problem_path[1:])
                     ants["path_cost"][i]    = 0
                     ants["round_trips"][i] += 1
 
-
-            ### Do we terminate?
-            
-            # Selalu menunggu setidaknya 1 solusi (catatan: 2+ solusi tidak dijamin)
             if not len(best_epochs): continue 
-            
-            # Timer lebih diprioritaskan dibandingkan batasan lainnya
             if self.time or self.min_time or self.timeout:
                 clock = time.perf_counter() - time_start
                 if self.time:
@@ -366,101 +244,109 @@ class AntColonySolver:
                 if self.min_time and clock < self.min_time: continue
                 if self.timeout  and clock > self.timeout:  break
             
-            # Epoch pertama hanya memiliki bau awal - pertanyaan: berapa banyak epoch yang diperlukan untuk mendapatkan hasil yang masuk akal?
             if self.min_round_trips and self.round_trips <  self.min_round_trips: continue        
             if self.max_round_trips and self.round_trips >= self.max_round_trips: break
-
-            # Faktor ini paling erat kaitannya dengan kekuatan komputasi                
             if self.min_ants and self.ants_used <  self.min_ants: continue        
             if self.max_ants and self.ants_used >= self.max_ants: break            
-            
-            # Mari terus lipatgandakan upaya kita hingga kita tidak dapat menemukan apa pun lagi
             if self.stop_factor and epoch > (best_epochs[-1] * self.stop_factor): break
-                                
-            # Tidak ada lagi yang menghentikan kita: Ratu memerintahkan semut untuk melanjutkan!      
             if True: continue
             
-            
-            
-        ### Kami (mudah-mudahan) telah menemukan jalur yang hampir optimal, lapor kembali ke Ratu
         self.epochs_used = epoch
         self.round_trips = np.max(ants["round_trips"])
         return best_path
 
-
     def next_node(self, ants, index):
         this_node   = ants['path'][index][-1]
-
         weights     = []
         weights_sum = 0
-        if not ants['remaining'][index]: return ants['path'][index][0]  # return home
+        if not ants['remaining'][index]: return ants['path'][index][0]  
         for next_node in ants['remaining'][index]:
             if next_node == this_node: continue
-            reward = (
-                    self.pheromones[this_node][next_node] ** self.pheromone_power
-                    * self.distance_cost[this_node][next_node]  # Lebih memilih jalan yang lebih pendek
-            )
+            reward = (self.pheromones[this_node][next_node] ** self.pheromone_power * self.distance_cost[this_node][next_node])
             weights.append( (reward, next_node) )
             weights_sum   += reward
-
-        # Pilih jalur acak yang sebanding dengan berat feromon
         rand = random.random() * weights_sum
         for (weight, next_node) in weights:
             if rand > weight: rand -= weight
             else:             break
         return next_node
-            
-        
-def AntColonyRunner(Kecamatan, verbose=False, plot=False, label={}, algorithm=AntColonySolver, **kwargs):
+
+def AntColonyRunner(Kecamatan, verbose=False, map_img=None, label={}, algorithm=AntColonySolver, **kwargs):
     solver     = algorithm(cost_fn=distance, verbose=verbose, **kwargs)
     start_time = time.perf_counter()
     result     = solver.solve(Kecamatan)
     stop_time  = time.perf_counter()
     if label: kwargs = { **label, **kwargs }
         
-    for key in ['verbose', 'plot', 'animate', 'label', 'min_time', 'max_time']:
-        if key in kwargs: del kwargs[key]
-    print("N={:<3d} | {:5.0f} -> {:4.0f} | {:4.0f}s | ants: {:5d} | trips: {:4d} | "
-          .format(len(Kecamatan), path_distance(Kecamatan), path_distance(result), (stop_time - start_time), solver.ants_used, solver.round_trips)
-          + " ".join([ f"{k}={v}" for k,v in kwargs.items() ])
-    )
-    if plot:
-        show_path(result)
+    print("N={:<3d} | {:5.0f} -> {:4.0f} | {:4.0f}s | ants: {:5d} | trips: {:4d} | ".format(
+          len(Kecamatan), path_distance(Kecamatan), path_distance(result), 
+          (stop_time - start_time), solver.ants_used, solver.round_trips) + 
+          " ".join([ f"{k}={v}" for k,v in kwargs.items() if k not in ['min_time', 'max_time'] ]))
+    
+    if map_img is not None:
+        show_path(result, map_img=map_img)
     return result
 
-# Pemecahan Masalah TSP #
-results = AntColonyRunner(Kecamatan, distance_power=1, verbose=True, plot=True)
+# ==========================================
+# MAIN EXECUTION (CLI BOUNDARY)
+# ==========================================
+if __name__ == "__main__":
+    # 1. Setup Argparse
+    parser = argparse.ArgumentParser(description="Optimasi Rute Antar Kantor Kecamatan (TSP) dengan ACO")
+    parser.add_argument('--city', type=str, default='Surabaya', help="Nama kota yang ingin diproses (Contoh: Surabaya, Sidoarjo, Depok)")
+    parser.add_argument('--ants', type=int, default=64, help="Jumlah semut dalam simulasi (default: 64)")
+    parser.add_argument('--iterations', type=int, default=100, help="Jumlah maksimum round trips/iterasi (default: 100)")
+    parser.add_argument('--alpha', type=float, default=1.25, help="Bobot feromon / pheromone_power (default: 1.25)")
+    parser.add_argument('--beta', type=float, default=1.0, help="Bobot visibilitas/jarak / distance_power (default: 1.0)")
+    parser.add_argument('--stats', action='store_true', help="Jalankan komputasi statistik Pandas di akhir")
+    
+    args = parser.parse_args()
 
-# Menggunakan Semut Liar #
-# results = AntColonyRunner(Kecamatan, distance_power=0, min_time=30, verbose=True, plot=True)
+    print(f"\n--- Menjalankan Optimasi untuk Kota: {args.city.upper()} ---")
+    print(f"Parameter: {args.ants} Semut, {args.iterations} Iterasi Maks, Alpha={args.alpha}, Beta={args.beta}\n")
 
-# VARIASI ACAK STATISTIK #
-import pandas as pd
-import matplotlib.pyplot as plt
+    # 2. Pemuatan Data Dinamis Berdasarkan CLI
+    try:
+        Kecamatan_Dict = load_coordinates(args.city)
+        Kecamatan = list(sorted(Kecamatan_Dict.items()))
+        map_img = load_city_map(args.city)
+        print("Banyak Kecamatan = ", len(Kecamatan))
+    except FileNotFoundError as e:
+        print(e)
+        exit(1)
 
-# Misalkan fungsi path_distance dan AntColonyRunner telah didefinisikan sebelumnya
-results_converged = [ AntColonyRunner(Kecamatan) for i in range(10) ]
-results_timed = [ AntColonyRunner(Kecamatan, time=10) for i in range(10) ]
+    # 3. Proses Pemetaan Awal
+    show_Kecamatan(Kecamatan, map_img=map_img)
+    
+    # 4. Pemecahan Masalah TSP Utama
+    print("\n[Mencari Rute Terbaik...]")
+    results = AntColonyRunner(
+        Kecamatan, 
+        verbose=True, 
+        map_img=map_img, 
+        ant_count=args.ants, 
+        max_round_trips=args.iterations, 
+        pheromone_power=args.alpha, 
+        distance_power=args.beta
+    )
 
-# Menghitung statistik untuk kedua hasil
-results_converged_stats = pd.Series([ path_distance(path) for path in results_converged ]).describe()
-results_timed_stats     = pd.Series([ path_distance(path) for path in results_timed     ]).describe()
+    print("\n✅ Eksekusi selesai. Silakan cek folder assets/results/ untuk melihat gambar hasil optimasi (path.png dan Kecamatan.png).")
 
-# Menghitung perbedaan antara hasil konvergen dan hasil terjadwal
-difference_stats = results_converged_stats - results_timed_stats
+    # 5. Blok Statistik Opsional (Gunakan flag --stats di terminal)
+    if args.stats:
+        print("\n--- Memulai Variasi Acak Statistik (Ini mungkin memakan waktu) ---")
+        results_converged = [ AntColonyRunner(Kecamatan) for i in range(10) ]
+        results_timed = [ AntColonyRunner(Kecamatan, time=5) for i in range(10) ]
 
-# Menggabungkan hasil dalam satu DataFrame
-df = pd.DataFrame({
-    "results_converged": results_converged_stats,
-    "results_timed":     results_timed_stats,
-    "difference":        difference_stats,
-}).T.round(1)
+        results_converged_stats = pd.Series([ path_distance(path) for path in results_converged ]).describe()
+        results_timed_stats     = pd.Series([ path_distance(path) for path in results_timed     ]).describe()
+        difference_stats = results_converged_stats - results_timed_stats
 
-# Membuat tabel dengan Matplotlib
-fig, ax = plt.subplots()
-ax.axis('tight')
-ax.axis('off')
-ax.table(cellText=df.values, colLabels=df.columns, rowLabels=df.index, cellLoc='center', loc='center')
+        df = pd.DataFrame({
+            "results_converged": results_converged_stats,
+            "results_timed":     results_timed_stats,
+            "difference":        difference_stats,
+        }).T.round(1)
 
-# Menampilkan tabel
-plt.show()
+        print("\n=== HASIL STATISTIK ===")
+        print(df)

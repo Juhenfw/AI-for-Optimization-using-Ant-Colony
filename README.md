@@ -1,36 +1,49 @@
-# Rute Antar Kantor Kecamatan Surabaya
+# Route Optimization for District Offices (TSP) using Ant Colony Optimization
 
-Repository ini berisi skrip Python yang bertujuan untuk menyelesaikan masalah Traveling Salesman Problem (TSP) di Kota Surabaya. Dengan memanfaatkan algoritma Ant Colony Optimization, skrip ini menghitung rute optimal yang menghubungkan kantor-kantor kecamatan di seluruh Surabaya. Hasilnya adalah visualisasi jalur yang dapat diikuti untuk mengunjungi semua kantor kecamatan dengan jarak tempuh minimum.
+*[🇮🇩 Baca dalam Bahasa Indonesia (Read in Indonesian)](README-id.md)*
 
-## Fitur Utama
+---
 
-- **Visualisasi Rute**: Skrip ini menampilkan peta Kota Surabaya dengan jalur rute optimal yang dihasilkan oleh algoritma. Jalur tersebut menunjukkan urutan kunjungan ke kantor kecamatan.
-- **Algoritma Optimasi**: Menggunakan algoritma Ant Colony Optimization untuk menemukan solusi terbaik dari TSP, yang mengoptimalkan rute berdasarkan jarak antar kecamatan.
-- **Analisis dan Statistik**: Menyediakan perhitungan statistik untuk membandingkan kinerja hasil konvergen dari algoritma dengan variasi acak yang terjadwal.
-- **Ekstensi dan Eksperimen**: Mudah diperluas untuk mencakup wilayah lain seperti Sidoarjo atau Depok, serta untuk menguji berbagai parameter algoritma.
+This repository contains a Python script aimed at solving the *Traveling Salesman Problem* (TSP) to find the most efficient routing between district offices (*Kantor Kecamatan*).
 
-## Teknologi yang Digunakan
+Utilizing the **Ant Colony Optimization (ACO)** algorithm, this script calculates the optimal route and provides a visual representation of the path with the minimum travel distance. The program has been dynamically designed so it can be easily adapted for various cities such as Surabaya, Sidoarjo, and Depok.
 
-- **Python**: Bahasa pemrograman utama untuk pengembangan skrip ini.
-- **Matplotlib**: Digunakan untuk visualisasi peta dan jalur optimal.
-- **NumPy**: Mendukung operasi matematis yang cepat dan efisien.
-- **Pandas**: Digunakan untuk analisis statistik hasil optimasi.
+## Key Features
 
-## Cara Penggunaan
+- **Multi-City Configuration (Dynamic)**: Equipped with a centralized configuration block. Simply change the `CITY_NAME` variable, and the program will automatically adjust the coordinate readings and map images.
+- **Smart Image Detector & Safe Saving**: The system intelligently detects the availability of maps in various formats (`.png` or `.jpg`) and automatically creates the output folder structure (`assets/results/`) if it does not exist to prevent errors.
+- **High-Performance Optimization Algorithm**: Uses a NumPy-vectorized *Ant Colony Solver*, ensuring the search for the best route runs swiftly.
+- **Map & Route Visualization**: Generates a point-to-point route image that is directly overlaid onto the city's original map.
+- **Analysis and Statistics**: Provides statistical table calculations using Pandas to compare the performance of purely converged algorithm results against time-constrained (scheduled) ones.
 
-1. **Instalasi**: Pastikan Anda telah menginstal semua dependensi yang dibutuhkan, seperti Matplotlib, NumPy, dan Pandas.
-2. **Eksekusi**: Jalankan skrip `Rute_Antar_Kantor_Kecamatan_Surabaya.py` untuk memulai proses optimasi dan menghasilkan visualisasi rute.
-3. **Hasil**: Lihat gambar hasil yang disimpan di direktori kerja Anda, atau langsung dari output Jupyter Notebook jika Anda menggunakan lingkungan tersebut.
+## Technologies Used
 
-## Contoh Penggunaan
+- **Python 3.x**: Main programming language.
+- **NumPy**: Accelerates mathematical operations and ant movements (vectorization) within the algorithm.
+- **Pandas**: Used for comparative statistical computing analysis on the final optimization results.
+- **Matplotlib**: The main engine for rendering coordinates and routing paths over the map image.
 
-Anda dapat melihat contoh hasil jalur optimal yang dihasilkan dari beberapa skenario berbeda, seperti:
-- Jalur optimal untuk seluruh kecamatan di Surabaya.
-- Variasi rute dengan penjadwalan waktu berbeda untuk menunjukkan dampak terhadap performa algoritma.
+## How to Use
 
-![Peta Kantor Kecamatan Surabaya](src/map/Location_District_Office_Surabaya.png)
-![Jalur Optimal](src/example_of_optimal_path_results.png)
+1. **Install Dependencies**: Ensure you have installed all supporting libraries. You can install them via terminal:
+   ```bash
+   pip install numpy pandas matplotlib ipython
+   ```
+2. **City Configuration**: Open the main script (e.g., `src/route_optimization.py`). At the very top, locate the **PENGATURAN UTAMA** (MAIN SETTINGS) block and change the variable value according to the city you want to analyze:
+   ```python
+   CITY_NAME = 'Surabaya' # Options: 'Surabaya', 'Sidoarjo', 'Depok'
+   ```
+3. **Execute the Program**: Run the script via terminal or an IDE (such as VS Code / Jupyter).
+4. **Check the Results**: The initial mapping image (`Kecamatan.png`) and the route optimization result (`path.png`) will automatically be saved neatly inside the `assets/results/` directory.
 
-## Lisensi
+## Visual Examples
 
-Proyek ini dilisensikan di bawah MIT License - lihat file [LICENSE](LICENSE) untuk detailnya.
+*(Original Map of Surabaya)*  
+![Peta Kantor Kecamatan Surabaya](assets/maps/Location_District_Office_Surabaya.png)
+
+*(Example of Optimal TSP Path)*  
+![Jalur Optimal](assets/results/path.png)
+
+## License
+
+This project is licensed under the **Apache License, Version 2.0**[cite: 6] - see the [LICENSE](LICENSE) file for details on usage, reproduction, and distribution terms.

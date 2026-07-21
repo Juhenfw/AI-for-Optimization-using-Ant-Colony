@@ -25,16 +25,31 @@ Dengan memanfaatkan algoritma **Ant Colony Optimization (ACO)**, skrip ini mengh
 
 ## Cara Penggunaan
 
-1. **Instalasi Dependensi**: Pastikan Anda telah menginstal semua *library* pendukung. Anda dapat menginstalnya melalui terminal:
+1. **Instalasi Dependensi**: Pastikan Anda telah menginstal semua *library* pendukung. Anda dapat menginstalnya melalui terminal menggunakan:
    ```bash
-   pip install numpy pandas matplotlib ipython
+   pip install -r requirements.txt
    ```
-2. **Konfigurasi Kota**: Buka *script* utama (misalnya `src/route_optimization.py`). Pada bagian paling atas, temukan blok **PENGATURAN UTAMA** dan ubah nilai variabel sesuai kota yang ingin dianalisis:
-   ```python
-   CITY_NAME = 'Surabaya' # Pilihan: 'Surabaya', 'Sidoarjo', 'Depok'
+   *(Atau secara manual: `pip install numpy pandas matplotlib ipython argparse`)*
+
+2. **Eksekusi Program**: Anda dapat menjalankan skrip optimasi ini langsung melalui terminal dengan berbagai opsi dinamis menggunakan argumen CLI. Tidak perlu lagi mengubah kode secara manual!
+   ```bash
+   # Jalankan dengan parameter default (Kota: Surabaya, Semut: 64, Iterasi: 100)
+   python src/route_optimization.py
+
+   # Jalankan untuk kota lain dengan parameter kustom
+   python src/route_optimization.py --city Sidoarjo --ants 100 --iterations 200
+
+   # Sesuaikan hiperparameter ACO (alpha: bobot feromon, beta: bobot jarak)
+   python src/route_optimization.py --city Depok --alpha 1.5 --beta 2.0
+   
+   # Jalankan dan buat analisis statistik tambahan
+   python src/route_optimization.py --city Surabaya --stats
+
+   # Tampilkan menu bantuan untuk melihat seluruh opsi perintah
+   python src/route_optimization.py --help
    ```
-3. **Eksekusi Program**: Jalankan *script* tersebut melalui terminal atau IDE (seperti VS Code / Jupyter).
-4. **Cek Hasil**: Gambar hasil pemetaan awal (`Kecamatan.png`) dan hasil optimasi rute (`path.png`) akan otomatis tersimpan dengan rapi di dalam direktori `assets/results/`.
+
+3. **Cek Hasil**: Gambar hasil pemetaan awal (`Kecamatan.png`) dan hasil optimasi rute (`path.png`) akan otomatis tersimpan dengan rapi di dalam direktori `assets/results/`.
 
 ## Contoh Hasil
 

@@ -23,18 +23,33 @@ Utilizing the **Ant Colony Optimization (ACO)** algorithm, this script calculate
 - **Pandas**: Used for comparative statistical computing analysis on the final optimization results.
 - **Matplotlib**: The main engine for rendering coordinates and routing paths over the map image.
 
-## How to Use
+## How to Run
 
-1. **Install Dependencies**: Ensure you have installed all supporting libraries. You can install them via terminal:
+1. **Install Dependencies**: Ensure you have installed all supporting libraries. If you have set up a virtual environment, you can install them via terminal using:
    ```bash
-   pip install numpy pandas matplotlib ipython
+   pip install -r requirements.txt
    ```
-2. **City Configuration**: Open the main script (e.g., `src/route_optimization.py`). At the very top, locate the **PENGATURAN UTAMA** (MAIN SETTINGS) block and change the variable value according to the city you want to analyze:
-   ```python
-   CITY_NAME = 'Surabaya' # Options: 'Surabaya', 'Sidoarjo', 'Depok'
+   *(Or manually: `pip install numpy pandas matplotlib ipython argparse`)*
+
+2. **Execute the Program**: You can run the optimization script directly from the terminal with various dynamic options using CLI arguments. No need to edit the code manually!
+   ```bash
+   # Run with default parameters (City: Surabaya, Ants: 64, Iterations: 100)
+   python src/route_optimization.py
+
+   # Run for a different city with custom parameters
+   python src/route_optimization.py --city Sidoarjo --ants 100 --iterations 200
+
+   # Adjust ACO hyperparameters (alpha: pheromone weight, beta: distance weight)
+   python src/route_optimization.py --city Depok --alpha 1.5 --beta 2.0
+   
+   # Run and generate additional statistical analysis
+   python src/route_optimization.py --city Surabaya --stats
+
+   # Display help menu to see all available flags
+   python src/route_optimization.py --help
    ```
-3. **Execute the Program**: Run the script via terminal or an IDE (such as VS Code / Jupyter).
-4. **Check the Results**: The initial mapping image (`Kecamatan.png`) and the route optimization result (`path.png`) will automatically be saved neatly inside the `assets/results/` directory.
+
+3. **Check the Results**: The initial mapping image (`Kecamatan.png`) and the route optimization result (`path.png`) will automatically be saved neatly inside the `assets/results/` directory.
 
 ## Visual Examples
 

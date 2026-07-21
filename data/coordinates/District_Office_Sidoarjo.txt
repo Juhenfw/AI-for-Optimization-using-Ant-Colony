@@ -1,0 +1,20 @@
+Kecamatan = {
+    "Balongbendo": (173, 210.3),
+    "Buduran": (521, 219),
+    "Candi": (503, 323),
+    "Gedangan": (522.6, 171.1),
+    "Jabon": (514, 429),
+    "Krembung": (358, 373),
+    "Krian": (283, 192.7),
+    "Prambon": (259, 303.7),
+    "Porong": (458.3, 422.5),
+    "Sedati": (596, 177.3),
+    "Sidoarjo": (500, 273.3),
+    "Sukodono": (440.8, 208),
+    "Taman": (474, 108),
+    "Tanggulangin": (504, 372),
+    "Tarik": (191, 274),
+    "Tulangan": (399, 324.5),
+    "Waru": (562.5, 104),
+    "Wonoayu": (366, 257)
+}

@@ -1,0 +1,38 @@
+# =========================
+# Python & Cache
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# Virtual Environment
+# =========================
+venv/
+.venv/
+env/
+Lib/
+Scripts/
+
+# =========================
+# IDE & Tools
+# =========================
+.vscode/
+.idea/
+.ipynb_checkpoints/
+
+# =========================
+# OS Generated Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Project Specific
+# =========================
+# Abaikan gambar hasil generate agar tidak memberatkan repository,
+# tetapi tetap pertahankan foldernya jika ada .gitkeep
+assets/results/*.png
+assets/results/*.jpg
+assets/results/*.jpeg
+!assets/results/.gitkeep
